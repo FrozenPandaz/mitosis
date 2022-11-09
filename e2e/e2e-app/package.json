@@ -22,7 +22,7 @@
     "mitosis-webcomponent": "mitosis build webcomponent",
     "run-mitosis-separately": "concurrently \"npm:mitosis-*\" --max-processes 3 --group || echo continuing",
     "run-mitosis-all": "mitosis build",
-    "e2e": "ts-node --project tsconfig.node.json e2e",
+    "e2e-old": "ts-node --project tsconfig.node.json e2e",
     "playwright": "../../node_modules/.bin/playwright test",
     "report": "../../node_modules/.bin/playwright show-report"
   },

@@ -4,7 +4,7 @@
   "scripts": {
     "clean": "rimraf src dist",
     "build": "yarn run mitosis && ng build",
-    "mitosis": "syncdir ../e2e-app/src src --deleteOrphaned --quiet && mitosis build && node generate_component_list",
+    "mitosis-old": "syncdir ../e2e-app/src src --deleteOrphaned --quiet && mitosis build && node generate_component_list",
     "ng": "ng",
     "start": "yarn run mitosis && ng serve",
     "serve": "http-server dist/e2e-angular",

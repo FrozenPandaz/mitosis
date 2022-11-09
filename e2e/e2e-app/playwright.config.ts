@@ -12,6 +12,10 @@ export const targets = [
   { packageName: 'e2e-vue3', port: 7503 },
 ];
 
+function getTarget() {
+  return targets.filter(t => t.packageName === process.argv[6]);
+}
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -69,8 +73,8 @@ const testConfig: PlaywrightTestConfig = {
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   // outputDir: 'test-results/',
 
-  webServer: targets.map((t) => ({
-    command: `yarn workspace @builder.io/${t.packageName} run serve --port ${t.port}`,
+  webServer: getTarget().map((t) => ({
+    command: `npx nx serve @builder.io/${t.packageName} --port ${t.port}`,
     port: t.port,
     reuseExistingServer: false,
   })),

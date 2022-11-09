@@ -7,7 +7,9 @@
     "build": "yarn run check && vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "dev": "vite",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "mitosis": "mitosis build alpine --config ../e2e-app/mitosis.config.js",
+    "e2e": "../../node_modules/.bin/playwright test --config ../e2e-app/playwright.config.ts --grep e2e-svelte"
   },
   "dependencies": {
     "@builder.io/e2e-app": "workspace:*"

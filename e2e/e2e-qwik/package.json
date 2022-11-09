@@ -13,7 +13,9 @@
     "lint": "eslint \"src/**/*.ts*\"",
     "serve-disable": "node --inspect-brk server/entry.express.mjs",
     "serve": "node --inspect node_modules/vite/bin/vite.js --mode ssr",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "mitosis": "mitosis build alpine --config ../e2e-app/mitosis.config.js",
+    "e2e": "../../node_modules/.bin/playwright test --config ../e2e-app/playwright.config.ts --grep e2e-qwik"
   },
   "dependencies": {
     "@builder.io/e2e-app-qwik-output": "workspace:*"

@@ -1,7 +1,7 @@
 // Mitosis E2E orchestration script
 
 import { readFile, writeFile } from 'fs/promises';
-import { resolve } from 'path';
+import { resolve, join } from 'path';
 import { spawn } from 'child_process';
 import syncDirectory from 'sync-directory';
 
@@ -19,15 +19,15 @@ const cases = [
 
 const packages = [
   '@builder.io/e2e-alpine',
-  '@builder.io/e2e-app-qwik-output',
-  '@builder.io/e2e-app-vue3-output',
-  '@builder.io/e2e-angular',
+  // '@builder.io/e2e-app-qwik-output',
+  // '@builder.io/e2e-app-vue3-output',
+  // '@builder.io/e2e-angular',
   '@builder.io/e2e-qwik',
-  '@builder.io/e2e-react',
-  '@builder.io/e2e-solid',
+  // '@builder.io/e2e-react',
+  // '@builder.io/e2e-solid',
   '@builder.io/e2e-svelte',
-  '@builder.io/e2e-vue2',
-  '@builder.io/e2e-vue3',
+  // '@builder.io/e2e-vue2',
+  // '@builder.io/e2e-vue3',
 ];
 
 // To keep the E2E code minimal, the case and target names are currently treated
@@ -46,13 +46,26 @@ async function yarn(...args) {
     child.on('exit', (code) => (code === 0 ? res(0) : reject(code)));
   });
 }
+async function nx(...args) {
+  return new Promise((res, reject) => {
+    let child = spawn('nx', args, {
+      cwd: resolve(__dirname, '../..'),
+      shell: true,
+      stdio: 'inherit',
+    });
+
+    child.on('error', reject);
+    child.on('exit', (code) => (code === 0 ? res(0) : reject(code)));
+  });
+}
 
 function allOk(specs: Entry[]) {
   return specs.every((s) => s.ok);
 }
 
-async function readSummary(caseName: string): Promise<Entry[]> {
-  const json = await readFile('./playwright-results.json', 'utf-8');
+async function readSummary(projectName: string, caseName: string): Promise<Entry[]> {
+  console.log({ projectName: join('..', projectName.replace('@builder.io/', ''), 'playwright-results.json')})
+  const json = await readFile(join('..', projectName.replace('@builder.io/', ''), 'playwright-results.json'), 'utf-8');
   const results = JSON.parse(json);
   return results.suites[0].suites.map((y) => ({
     caseName,
@@ -85,45 +98,46 @@ async function main() {
 
   // Build one case at a time, so we only need one build env per target.
   for (const c of cases) {
-    console.log('--------------------------------- E2E case:', c);
+    // console.log('--------------------------------- E2E case:', c);
+    //
+    // // Copy the case source into src; see
+    // // https://github.com/BuilderIO/mitosis/issues/494
+    // syncDirectory(resolve('cases', c), resolve('src'), {
+    //   deleteOrphaned: true,
+    //   exclude: ['.gitkeep'],
+    // });
+    //
+    // // Clean the output - don't want Vite or other tools to leave behind
+    // // previous app on failure.
+    //
+    // await nx('run-many --target clean --projects ' + packages.join(','));
+    //
+    // // Mitosis all targets - with a workaround to tolerate failure, until:
+    // // https://github.com/BuilderIO/mitosis/issues/510
+    // await yarn('workspace', '@builder.io/e2e-app', 'run', 'run-mitosis-separately');
+    //
+    // // Build the libraries and host apps in the normal way.
+    // // Ideally we could use Yarn Workspace, but it lacks a partial-success-OK flag.
+    // // await yarn('workspaces', 'foreach', '-pt', '--include', '*/e2e-*', '--verbose', 'run', 'build');
+    //
+    // await nx('run-many --target build --projects ' + packages.join(','));
+    //
+    // // Invoke Playwright to test them all.
+    // try {
+    //   await yarn('workspace', '@builder.io/e2e-app', 'run', 'playwright');
+    // } catch (e) {
+    //   console.log('Playwright failed, proceeding anyway');
+    // }
 
-    // Copy the case source into src; see
-    // https://github.com/BuilderIO/mitosis/issues/494
-    syncDirectory(resolve('cases', c), resolve('src'), {
-      deleteOrphaned: true,
-      exclude: ['.gitkeep'],
-    });
+    // try {
+    //   await nx('run-many --target build --projects ' + packages.join(',') + ' --parallel 4');
+    // } catch {
+    //     console.log('Playwright failed, proceeding anyway');
+    // }
 
-    // Clean the output - don't want Vite or other tools to leave behind
-    // previous app on failure.
     for (const p of packages) {
-      await yarn('workspace', p, 'run', 'clean');
+      allResults.push(...(await readSummary(p, c)));
     }
-
-    // Mitosis all targets - with a workaround to tolerate failure, until:
-    // https://github.com/BuilderIO/mitosis/issues/510
-    await yarn('workspace', '@builder.io/e2e-app', 'run', 'run-mitosis-separately');
-
-    // Build the libraries and host apps in the normal way.
-    // Ideally we could use Yarn Workspace, but it lacks a partial-success-OK flag.
-    // await yarn('workspaces', 'foreach', '-pt', '--include', '*/e2e-*', '--verbose', 'run', 'build');
-
-    for (const p of packages) {
-      try {
-        await yarn('workspace', p, 'run', 'build');
-      } catch (e) {
-        console.log('Failed', p, 'proceeding with E2E');
-      }
-    }
-
-    // Invoke Playwright to test them all.
-    try {
-      await yarn('workspace', '@builder.io/e2e-app', 'run', 'playwright');
-    } catch (e) {
-      console.log('Playwright failed, proceeding anyway');
-    }
-
-    allResults.push(...(await readSummary(c)));
   }
 
   // console.log('E2E results', allResults);

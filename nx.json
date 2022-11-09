@@ -6,16 +6,29 @@
         "cacheableOperations": [
           "build",
           "lint",
-          "test"
+          "test",
+          "e2e"
         ],
         "accessToken": "YTlkNzc4YzMtNzMzYS00NGFmLWJiZjktZDc2NjljZjc2OTVjfHJlYWQtd3JpdGU="
       }
     }
   },
+  "namedInputs": {
+    "default": [
+      "!{projectRoot}/dist",
+      "!{projectRoot}/output",
+      "!{projectRoot}/playwright-results.json"
+    ],
+    "e2eFiles": ["{projectRoot}/src/**/*"]
+  },
   "targetDefaults": {
     "build": {
       "dependsOn": [
-        "^build"
+        "clean"
+      ],
+      "inputs": [
+        "default",
+        "^e2eFiles"
       ],
       "outputs": [
         "{projectRoot}/dist"
@@ -24,6 +37,13 @@
     "test": {
       "outputs": [
         "{projectRoot}/coverage"
+      ]
+    },
+    "e2e": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "default",
+        "^e2eFiles"
       ]
     }
   },

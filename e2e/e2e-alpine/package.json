@@ -7,7 +7,9 @@
     "build": "yarn run check && vite build",
     "check": "echo 'TODO: Alpine.js check script.'",
     "dev": "vite",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "mitosis": "mitosis build alpine --config ../e2e-app/mitosis.config.js",
+    "e2e": "../../node_modules/.bin/playwright test --config ../e2e-app/playwright.config.ts --grep e2e-alpine"
   },
   "dependencies": {
     "@builder.io/e2e-app": "workspace:*"
